@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador Financeiro & Parcelamentos</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Top Header -->
+        <header>
+            <div class="brand">
+                <div class="brand-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="brand-title">
+                    <h1>Finanças</h1>
+                    <p>Controle de gastos</p>
+                </div>
+            </div>
+
+            <div class="income-card">
+                <label for="monthly-income"><i class="fa-solid fa-money-bill-wave" style="color: var(--success); margin-right: 4px;"></i> Sua Renda Mensal:</label>
+                <div class="income-input-wrapper">
+                    R$ <input type="number" id="monthly-income" value="3000" step="100" min="0">
+                </div>
+            </div>
+        </header>
+
+        <!-- Metrics Overview -->
+        <div class="dashboard-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Comprometimento Mensal</span>
+                    <div class="metric-icon" style="background: var(--primary-light); color: var(--primary);">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                </div>
+                <div class="metric-value" id="metric-percentage">0%</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <div class="metric-subtitle" id="metric-percentage-sub">0% da sua renda comprometida</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Total de Gastos (Mês Atual)</span>
+                    <div class="metric-icon" style="background: #FEE2E2; color: var(--danger);">
+                        <i class="fa-solid fa-arrow-down-short-wide"></i>
+                    </div>
+                </div>
+                <div class="metric-value" id="metric-total-expenses">R$ 0,00</div>
+                <div class="metric-subtitle" id="metric-remaining">Saldo restante: R$ 0,00</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Parcelamentos Ativos</span>
+                    <div class="metric-icon" style="background: #FEF3C7; color: var(--warning);">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                </div>
+                <div class="metric-value" id="metric-installments-count">0</div>
+                <div class="metric-subtitle" id="metric-installments-sub">Compras divididas no cartão/lojas</div>
+            </div>
+        </div>
+
+        <!-- Main Content Layout -->
+        <div class="main-grid">
+            <!-- Left Side: Add Expense Form -->
+            <div class="card">
+                <h3 class="card-title"><i class="fa-solid fa-circle-plus"></i> Novo Lançamento</h3>
+                <form id="expense-form">
+                    <div class="form-group">
+                        <label>Descrição / Loja</label>
+                        <input type="text" class="form-control" id="desc" placeholder="Ex: Havan, Luz, Mercado X" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Categoria</label>
+                            <select class="form-control" id="category">
+                                <option value="Loja">Loja (Havan, Magalu...)</option>
+                                <option value="Cartão">Cartão de Crédito</option>
+                                <option value="Luz">Luz</option>
+                                <option value="Água">Água</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Valor Parcela (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="amount" placeholder="0,00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Nº de Parcelas</label>
+                            <select class="form-control" id="installments">
+                                <option value="1">1x (À vista / Fixo)</option>
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                                <option value="7">7x</option>
+                                <option value="8">8x</option>
+                                <option value="9">9x</option>
+                                <option value="10">10x</option>
+                                <option value="12">12x</option>
+                                <option value="18">18x</option>
+                                <option value="24">24x</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Data Compra/Venc.</label>
+                            <input type="date" class="form-control" id="expense-date" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Registrar Gasto</button>
+                </form>
+            </div>
+
+            <!-- Right Side: Views (Tabs) -->
+            <div>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('list-tab')"><i class="fa-solid fa-list-check"></i> Gastos do Mês</button>
+                    <button class="tab-btn" onclick="switchTab('projection-tab')"><i class="fa-solid fa-chart-line"></i> Próximos Meses</button>
+                    <button class="tab-btn" onclick="switchTab('calendar-tab')"><i class="fa-solid fa-calendar-days"></i> Calendário</button>
+                </div>
+
+                <!-- Tab 1: Gastos Atuais -->
+                <div id="list-tab" class="tab-content active">
+                    <div class="card">
+                        <h3 class="card-title"><i class="fa-solid fa-receipt"></i> Registros deste Mês</h3>
+                        <div id="expense-list">
+                            <!-- Injected by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Projeção Futura -->
+                <div id="projection-tab" class="tab-content">
+                    <div class="card">
+                        <h3 class="card-title"><i class="fa-solid fa-forward"></i> Projeção de Gastos Comprometidos</h3>
+                        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">
+                            Acompanhe quanto da sua renda já está comprometida com parcelas nos próximos 6 meses.
+                        </p>
+                        <div class="projection-grid" id="projection-cards">
+                            <!-- Injected by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Calendário -->
+                <div id="calendar-tab" class="tab-content">
+                    <div class="card">
+                        <div class="calendar-header">
+                            <h3 id="calendar-month-year">Mês Ano</h3>
+                            <div class="calendar-nav">
+                                <button onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                                <button onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid">
+                            <!-- Injected by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
