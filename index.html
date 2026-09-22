@@ -127,6 +127,7 @@
             </div>
 
             <!-- Right Side: Views (Tabs) -->
+            <!-- Right Side: Views (Tabs) -->
             <div>
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('list-tab')"><i class="fa-solid fa-list-check"></i> Gastos do Mês</button>
@@ -134,23 +135,49 @@
                     <button class="tab-btn" onclick="switchTab('calendar-tab')"><i class="fa-solid fa-calendar-days"></i> Calendário</button>
                 </div>
 
-                <!-- Tab 1: Gastos Atuais -->
+                <!-- Tab 1: Gastos por Mês com Navegação -->
                 <div id="list-tab" class="tab-content active">
                     <div class="card">
-                        <h3 class="card-title"><i class="fa-solid fa-receipt"></i> Registros deste Mês</h3>
+                        <div class="month-navigator">
+                            <button class="nav-arrow-btn" onclick="navigateMonth(-1)" title="Mês anterior">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <div class="month-navigator-info">
+                                <h3 id="viewing-month-title">Mês Atual</h3>
+                                <div class="month-status-tags">
+                                    <span class="badge-status" id="viewing-month-badge">Mês Atual</span>
+                                    <span class="badge-month-total" id="viewing-month-total">Total: R$ 0,00</span>
+                                </div>
+                            </div>
+                            <button class="nav-arrow-btn" onclick="navigateMonth(1)" title="Próximo mês">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="btn-today-shortcut" id="btn-today-shortcut" onclick="goToCurrentMonth()" title="Voltar ao mês atual">
+                                <i class="fa-solid fa-rotate-left"></i> Mês Atual
+                            </button>
+                        </div>
+
                         <div id="expense-list">
                             <!-- Injected by JavaScript -->
+                        </div>
+
+                        <div id="advanced-expenses-section" style="display: none; margin-top: 18px;">
+                            <!-- Injected by JavaScript for installments already advanced/paid -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab 2: Projeção Futura -->
+                <!-- Tab 2: Projeção Futura Detalhada com Descrição de Contas e Parcelas -->
                 <div id="projection-tab" class="tab-content">
                     <div class="card">
-                        <h3 class="card-title"><i class="fa-solid fa-forward"></i> Projeção de Gastos Comprometidos</h3>
-                        <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 20px;">
-                            Acompanhe quanto da sua renda já está comprometida com parcelas nos próximos 6 meses.
-                        </p>
+                        <div class="projection-header-row">
+                            <div>
+                                <h3 class="card-title" style="margin-bottom: 6px;"><i class="fa-solid fa-chart-pie"></i> Gastos dos Próximos Meses</h3>
+                                <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 18px;">
+                                    Veja o valor total de cada mês futuro, a descrição de todas as contas que você pagará e quantas parcelas faltam para acabar. Caso tenha adiantado alguma parcela no mês anterior, basta clicar para apagá-la.
+                                </p>
+                            </div>
+                        </div>
                         <div class="projection-grid" id="projection-cards">
                             <!-- Injected by JavaScript -->
                         </div>
@@ -175,6 +202,50 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para Gerenciar / Apagar Parcela Adiantada -->
+    <div id="action-modal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                <div>
+                    <h3 id="modal-title">Gerenciar Parcela</h3>
+                    <p id="modal-subtitle">Escolha o que deseja fazer com este gasto</p>
+                </div>
+                <button class="modal-close" onclick="closeActionModal()">&times;</button>
+            </div>
+            <div class="modal-content-details">
+                <div class="modal-item-card">
+                    <div class="modal-item-desc" id="modal-item-desc">Compra Havan</div>
+                    <div class="modal-item-sub" id="modal-item-sub">Parcela 3 de 10x • Outubro de 2026</div>
+                    <div class="modal-item-remaining" id="modal-item-remaining">Faltam 7 parcelas para acabar</div>
+                    <div class="modal-item-val" id="modal-item-val">R$ 100,00</div>
+                </div>
+            </div>
+            <div class="modal-actions-list">
+                <button type="button" class="modal-action-btn btn-advance" onclick="executeDeleteSingleInstallment()">
+                    <div class="action-btn-icon"><i class="fa-solid fa-forward-step"></i></div>
+                    <div class="action-btn-texts">
+                        <strong>Apagar apenas esta parcela</strong>
+                        <span id="modal-advance-hint">Você adiantou esta parcela no mês anterior? Ela será apagada apenas deste mês. As parcelas futuras continuam normalmente.</span>
+                    </div>
+                </button>
+                <button type="button" class="modal-action-btn btn-danger" onclick="executeDeleteAllInstallments()">
+                    <div class="action-btn-icon"><i class="fa-solid fa-trash-can"></i></div>
+                    <div class="action-btn-texts">
+                        <strong>Excluir compra inteira</strong>
+                        <span>Exclui permanentemente este lançamento e todas as suas parcelas de todos os meses.</span>
+                    </div>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeActionModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
     <script src="script.js"></script>
 </body>
