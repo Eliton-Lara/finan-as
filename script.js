@@ -1,4 +1,4 @@
-// State Management
+﻿// State Management
 let expenses = JSON.parse(localStorage.getItem('finances_expenses')) || [
     { id: 1, desc: 'Conta de Luz', category: 'Luz', amount: 150.00, installments: 1, date: getRelativeDate(0, 5), removedMonths: [] },
     { id: 2, desc: 'Conta de Água', category: 'Água', amount: 80.00, installments: 1, date: getRelativeDate(0, 10), removedMonths: [] },
@@ -190,6 +190,13 @@ function goToCurrentMonth() {
     updateApp();
 }
 
+function onJumpToMonth(val) {
+    if (!val) return;
+    const [year, month] = val.split('-').map(Number);
+    viewingDate = new Date(year, month - 1, 1);
+    updateApp();
+}
+
 function openMonthInMainTab(year, month) {
     viewingDate = new Date(year, month, 1);
     switchTab('list-tab');
@@ -199,14 +206,23 @@ function openMonthInMainTab(year, month) {
 // Update All Views & Dashboards
 function updateApp() {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+    const vYear = viewingDate.getFullYear();
+    const vMonth = viewingDate.getMonth();
+    const isCurrentMonth = vYear === now.getFullYear() && vMonth === now.getMonth();
+    const monthName = viewingDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    const monthShort = viewingDate.toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
 
-    // 1. Metrics for the CURRENT month (Dashboard Overview)
-    const currentMonthExpenses = getActiveInstallmentsForMonth(currentYear, currentMonth, false);
-    const totalSpentCurrentMonth = currentMonthExpenses.reduce((sum, item) => sum + item.amount, 0);
+    // Sync native month picker
+    const jumpPicker = document.getElementById('month-jump-picker');
+    if (jumpPicker) {
+        jumpPicker.value = `${vYear}-${String(vMonth + 1).padStart(2, '0')}`;
+    }
 
-    const percentage = income > 0 ? Math.round((totalSpentCurrentMonth / income) * 100) : 0;
+    // 1. Metrics for the VIEWING month (recalculados automaticamente para o mês selecionado)
+    const viewingMonthExpenses = getActiveInstallmentsForMonth(vYear, vMonth, false);
+    const totalSpentViewing = viewingMonthExpenses.reduce((sum, item) => sum + item.amount, 0);
+
+    const percentage = income > 0 ? Math.round((totalSpentViewing / income) * 100) : 0;
     const percentageElem = document.getElementById('metric-percentage');
     const progressBar = document.getElementById('progress-bar');
     
@@ -224,15 +240,31 @@ function updateApp() {
         percentageElem.style.color = 'var(--dark)';
     }
 
-    document.getElementById('metric-percentage-sub').innerText = `${percentage}% da renda de ${formatCurrency(income)}`;
-    document.getElementById('metric-total-expenses').innerText = formatCurrency(totalSpentCurrentMonth);
+    const metricTitle = document.getElementById('metric-total-title');
+    if (metricTitle) {
+        metricTitle.innerText = isCurrentMonth ? 'Total de Gastos (Mês Atual)' : `Total de Gastos (${monthShort})`;
+    }
+
+    const metricPercentageTitle = document.getElementById('metric-percentage-title');
+    if (metricPercentageTitle) {
+        metricPercentageTitle.innerText = isCurrentMonth ? 'Comprometimento Mensal' : `Comprometimento (${monthShort})`;
+    }
+
+    const subTitleElem = document.getElementById('metric-percentage-sub');
+    if (subTitleElem) {
+        subTitleElem.innerText = isCurrentMonth 
+            ? `${percentage}% da sua renda comprometida`
+            : `${percentage}% da renda comprometida em ${monthName}`;
+    }
+
+    document.getElementById('metric-total-expenses').innerText = formatCurrency(totalSpentViewing);
     
-    const remaining = income - totalSpentCurrentMonth;
+    const remaining = income - totalSpentViewing;
     const remainingElem = document.getElementById('metric-remaining');
     remainingElem.innerText = `Saldo livre: ${formatCurrency(remaining)}`;
     remainingElem.style.color = remaining < 0 ? 'var(--danger)' : 'var(--gray-500)';
 
-    const installmentCount = currentMonthExpenses.filter(e => e.installments > 1).length;
+    const installmentCount = viewingMonthExpenses.filter(e => e.installments > 1).length;
     document.getElementById('metric-installments-count').innerText = installmentCount;
 
     // 2. Render Expense List for the VIEWING month
